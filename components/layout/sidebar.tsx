@@ -138,6 +138,12 @@ const navGroups: NavGroup[] = [
         labelEn: 'Purchase Orders',
         icon: ShoppingCart,
       },
+      {
+        href: '/purchases/payments',
+        labelAr: 'سداد الموردين وفروق العملة',
+        labelEn: 'Supplier Payments & FX',
+        icon: DollarSign,
+      },
     ],
   },
   {
