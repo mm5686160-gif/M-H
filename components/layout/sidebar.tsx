@@ -32,6 +32,7 @@ import {
   Globe,
   ArrowRightLeft,
   Sliders,
+  Clock,
   DollarSign,
   History,
   Shield,
@@ -194,6 +195,12 @@ const navGroups: NavGroup[] = [
         labelAr: 'العملاء وCRM',
         labelEn: 'Customers',
         icon: Users,
+      },
+      {
+        href: '/customers/aging',
+        labelAr: 'أعمار الديون والتحصيل',
+        labelEn: 'Aging Report',
+        icon: Clock,
       },
       {
         href: '/sales/new',
