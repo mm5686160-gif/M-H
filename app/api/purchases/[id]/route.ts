@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { canManagePurchases } from '@/lib/utils';
-import Decimal from 'decimal.js';
 
 export const dynamic = 'force-dynamic';
 

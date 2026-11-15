@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAgingBucket, whatsappLink, formatEGP } from '@/lib/utils';
-import Decimal from 'decimal.js';
 
 export const dynamic = 'force-dynamic';
 

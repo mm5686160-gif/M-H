@@ -254,8 +254,14 @@ const navGroups: NavGroup[] = [
       {
         href: '/reports',
         labelAr: 'التقارير وتصدير Excel',
-        labelEn: 'Reports',
+        labelEn: 'Reports & Export',
         icon: PieChart,
+      },
+      {
+        href: '/import',
+        labelAr: 'استيراد البيانات من Excel',
+        labelEn: 'Excel Bulk Import',
+        icon: FileSpreadsheet,
       },
       {
         href: '/settings',
