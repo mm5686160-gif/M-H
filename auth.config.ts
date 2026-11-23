@@ -18,9 +18,11 @@ export const authConfig: NextAuthConfig = {
       const isLoggedIn = !!auth?.user;
       const isAuthPage = nextUrl.pathname.startsWith('/login');
       const isApiAuthRoute = nextUrl.pathname.startsWith('/api/auth');
-      const isPublicRoute = nextUrl.pathname.startsWith('/_next') ||
-                            nextUrl.pathname.startsWith('/favicon.ico') ||
-                            nextUrl.pathname.startsWith('/images');
+      const isPublicRoute =
+        nextUrl.pathname.startsWith('/_next') ||
+        nextUrl.pathname.startsWith('/favicon.ico') ||
+        nextUrl.pathname.startsWith('/images') ||
+        nextUrl.pathname.startsWith('/api/diagnostics');
 
       if (isPublicRoute || isApiAuthRoute) {
         return true;
