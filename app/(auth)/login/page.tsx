@@ -47,20 +47,27 @@ export default function LoginPage() {
       setErrorMessage(null);
 
       const result = await signIn('credentials', {
-        email: data.email,
+        email: data.email.trim(),
         password: data.password,
         redirect: false,
       });
 
       if (result?.error) {
-        setErrorMessage(
-          locale === 'ar'
-            ? 'بيانات الدخول غير صحيحة، يرجى التأكد والمحاولة مرة أخرى'
-            : 'Invalid credentials. Please verify and try again.'
-        );
+        if (result.error === 'Configuration') {
+          setErrorMessage(
+            locale === 'ar'
+              ? 'خطأ في إعدادات المصادقة في السيرفر'
+              : 'Authentication server configuration error.'
+          );
+        } else {
+          setErrorMessage(
+            locale === 'ar'
+              ? 'بيانات الدخول غير صحيحة، يرجى التأكد والمحاولة مرة أخرى'
+              : 'Invalid credentials. Please verify and try again.'
+          );
+        }
       } else {
-        router.push('/');
-        router.refresh();
+        window.location.href = '/';
       }
     } catch (err: any) {
       setErrorMessage(
@@ -74,8 +81,8 @@ export default function LoginPage() {
   };
 
   const setDemoUser = (email: string) => {
-    setValue('email', email);
-    setValue('password', '!Password123');
+    setValue('email', email, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+    setValue('password', '!Password123', { shouldValidate: true, shouldDirty: true, shouldTouch: true });
     setErrorMessage(null);
   };
 
