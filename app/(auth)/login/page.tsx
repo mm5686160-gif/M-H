@@ -37,7 +37,7 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: 'owner@erp.local',
-      password: 'Password123!',
+      password: '!Password123',
     },
   });
 
@@ -75,7 +75,7 @@ export default function LoginPage() {
 
   const setDemoUser = (email: string) => {
     setValue('email', email);
-    setValue('password', 'Password123!');
+    setValue('password', '!Password123');
     setErrorMessage(null);
   };
 
@@ -178,7 +178,7 @@ export default function LoginPage() {
               {locale === 'ar' ? 'حسابات تجريبية سريعة:' : 'Quick Demo Accounts:'}
             </span>
             <Badge variant="outline" className="text-[10px]">
-              {locale === 'ar' ? 'كلمة المرور: Password123!' : 'Pass: Password123!'}
+              {locale === 'ar' ? 'كلمة المرور: !Password123' : 'Pass: !Password123'}
             </Badge>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">

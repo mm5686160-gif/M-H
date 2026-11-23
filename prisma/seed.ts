@@ -33,18 +33,16 @@ async function main() {
   // -------------------------------------------------------------------------
   console.log("  → Creating users...");
 
-  const ownerHash    = await hashPassword("Password123!");
-  const managerHash  = await hashPassword("Password123!");
-  const salesRepHash = await hashPassword("Password123!");
-  const cashierHash  = await hashPassword("Password123!");
+  // Primary password requested by user: !Password123
+  const defaultHash = await hashPassword("!Password123");
 
   const owner = await prisma.user.upsert({
     where: { email: "owner@erp.local" },
-    update: {},
+    update: { hashedPassword: defaultHash, isActive: true },
     create: {
-      name:           "أحمد محمد السيد",
+      name:           "أحمد محمد السيد (المالك)",
       email:          "owner@erp.local",
-      hashedPassword: ownerHash,
+      hashedPassword: defaultHash,
       role:           UserRole.OWNER,
       isActive:       true,
     },
@@ -52,23 +50,47 @@ async function main() {
 
   const manager = await prisma.user.upsert({
     where: { email: "manager@erp.local" },
-    update: {},
+    update: { hashedPassword: defaultHash, isActive: true },
     create: {
-      name:           "محمد عبد الرحمن",
+      name:           "محمد عبد الرحمن (المدير)",
       email:          "manager@erp.local",
-      hashedPassword: managerHash,
+      hashedPassword: defaultHash,
       role:           UserRole.MANAGER,
       isActive:       true,
     },
   });
 
-  const salesRepUser = await prisma.user.upsert({
-    where: { email: "sales@erp.local" },
-    update: {},
+  const accountant = await prisma.user.upsert({
+    where: { email: "accountant@erp.local" },
+    update: { hashedPassword: defaultHash, isActive: true },
     create: {
-      name:           "خالد إبراهيم حسن",
+      name:           "سامح عبد الله (المحاسب)",
+      email:          "accountant@erp.local",
+      hashedPassword: defaultHash,
+      role:           UserRole.ACCOUNTANT,
+      isActive:       true,
+    },
+  });
+
+  const salesRepUser = await prisma.user.upsert({
+    where: { email: "salesrep@erp.local" },
+    update: { hashedPassword: defaultHash, isActive: true },
+    create: {
+      name:           "خالد إبراهيم حسن (المندوب)",
+      email:          "salesrep@erp.local",
+      hashedPassword: defaultHash,
+      role:           UserRole.SALES_REP,
+      isActive:       true,
+    },
+  });
+
+  const salesLegacyUser = await prisma.user.upsert({
+    where: { email: "sales@erp.local" },
+    update: { hashedPassword: defaultHash, isActive: true },
+    create: {
+      name:           "خالد إبراهيم حسن (المندوب)",
       email:          "sales@erp.local",
-      hashedPassword: salesRepHash,
+      hashedPassword: defaultHash,
       role:           UserRole.SALES_REP,
       isActive:       true,
     },
@@ -76,20 +98,32 @@ async function main() {
 
   const cashier = await prisma.user.upsert({
     where: { email: "cashier@erp.local" },
-    update: {},
+    update: { hashedPassword: defaultHash, isActive: true },
     create: {
-      name:           "فاطمة علي محمود",
+      name:           "فاطمة علي محمود (الكاشير)",
       email:          "cashier@erp.local",
-      hashedPassword: cashierHash,
+      hashedPassword: defaultHash,
       role:           UserRole.CASHIER,
       isActive:       true,
     },
   });
 
-  // SalesRep record for the sales user
-  const salesRep = await prisma.salesRep.upsert({
+  const warehouseKeeper = await prisma.user.upsert({
+    where: { email: "warehouse@erp.local" },
+    update: { hashedPassword: defaultHash, isActive: true },
+    create: {
+      name:           "محمود توفيق (أمين المخزن)",
+      email:          "warehouse@erp.local",
+      hashedPassword: defaultHash,
+      role:           UserRole.WAREHOUSE,
+      isActive:       true,
+    },
+  });
+
+  // SalesRep records
+  await prisma.salesRep.upsert({
     where: { userId: salesRepUser.id },
-    update: {},
+    update: { isActive: true },
     create: {
       userId:            salesRepUser.id,
       commissionRatePct: d(3),
@@ -97,7 +131,23 @@ async function main() {
     },
   });
 
-  console.log(`     ✓ Users: ${owner.email}, ${manager.email}, ${salesRepUser.email}, ${cashier.email}`);
+  await prisma.salesRep.upsert({
+    where: { userId: salesLegacyUser.id },
+    update: { isActive: true },
+    create: {
+      userId:            salesLegacyUser.id,
+      commissionRatePct: d(3),
+      isActive:          true,
+    },
+  });
+
+  console.log(`     ✓ Users created/updated with password '!Password123':`);
+  console.log(`       - ${owner.email} (OWNER)`);
+  console.log(`       - ${manager.email} (MANAGER)`);
+  console.log(`       - ${accountant.email} (ACCOUNTANT)`);
+  console.log(`       - ${salesRepUser.email} (SALES_REP)`);
+  console.log(`       - ${cashier.email} (CASHIER)`);
+  console.log(`       - ${warehouseKeeper.email} (WAREHOUSE)`);
 
   // -------------------------------------------------------------------------
   // 2. SETTINGS
@@ -644,7 +694,7 @@ async function main() {
       code: "CUST-0001", nameAr: "محلات النور للمحامل", nameEn: "Al-Nour Bearings Shop",
       customerType: CustomerType.WHOLESALE, governorate: "القاهرة", area: "السيدة زينب",
       phone: "+201001234567", whatsappNumber: "+201001234567",
-      salesRepId: salesRep.id, priceListId: plWholesale.id,
+      salesRepId: salesRepUser.id, priceListId: plWholesale.id,
       creditLimitEGP: d(50000), creditDays: 30,
       segment: CustomerSegment.VIP, tags: ["bearings", "wholesale"],
       isActive: true, currentBalanceEGP: d(0),
@@ -658,7 +708,7 @@ async function main() {
       code: "CUST-0002", nameAr: "ورشة الأمل لصيانة الأجهزة", nameEn: "Al-Amal Appliance Repair Workshop",
       customerType: CustomerType.WORKSHOP, governorate: "الإسكندرية", area: "سيدي بشر",
       phone: "+201113456789", whatsappNumber: "+201113456789",
-      salesRepId: salesRep.id, priceListId: plSemiWholesale.id,
+      salesRepId: salesRepUser.id, priceListId: plSemiWholesale.id,
       creditLimitEGP: d(10000), creditDays: 15,
       segment: CustomerSegment.REGULAR, tags: ["repair", "spare-parts"],
       isActive: true, currentBalanceEGP: d(0),
@@ -673,7 +723,7 @@ async function main() {
       customerType: CustomerType.COMPANY, governorate: "الجيزة", area: "6 أكتوبر",
       phone: "+201222345678", email: "orders@shorouk-dist.com",
       taxNumber: "987-654-321",
-      salesRepId: salesRep.id, priceListId: plWholesale.id,
+      salesRepId: salesRepUser.id, priceListId: plWholesale.id,
       creditLimitEGP: d(100000), creditDays: 45,
       segment: CustomerSegment.VIP, tags: ["distribution", "company"],
       isActive: true, currentBalanceEGP: d(0),
@@ -921,7 +971,7 @@ async function main() {
     update: {},
     create: {
       invoiceNumber: "INV-2025-001", customerId: custA.id,
-      salesRepId: salesRep.id, invoiceDate: new Date("2025-03-15"),
+      salesRepId: salesRepUser.id, invoiceDate: new Date("2025-03-15"),
       dueDate: new Date("2025-04-14"), status: InvoiceStatus.PAID,
       currency: "EGP", exchangeRate: d(1),
       subtotal: d("3050.00"), discountTotal: d("150.00"),
@@ -982,7 +1032,7 @@ async function main() {
     update: {},
     create: {
       invoiceNumber: "INV-2025-002", customerId: custB.id,
-      salesRepId: salesRep.id, invoiceDate: new Date("2025-04-01"),
+      salesRepId: salesRepUser.id, invoiceDate: new Date("2025-04-01"),
       dueDate: new Date("2025-04-16"), status: InvoiceStatus.PARTIALLY_PAID,
       currency: "EGP", exchangeRate: d(1),
       subtotal: d("5400.00"), discountTotal: d("0"),
@@ -1043,7 +1093,7 @@ async function main() {
     update: {},
     create: {
       invoiceNumber: "INV-2025-003", customerId: custC.id,
-      salesRepId: salesRep.id, invoiceDate: new Date("2025-03-01"),
+      salesRepId: salesRepUser.id, invoiceDate: new Date("2025-03-01"),
       dueDate: new Date("2025-04-15"), status: InvoiceStatus.OVERDUE,
       currency: "EGP", exchangeRate: d(1),
       subtotal: d("12750.00"), discountTotal: d("750.00"),
