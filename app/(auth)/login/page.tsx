@@ -53,7 +53,16 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        if (result.error === 'Configuration') {
+        if (
+          result.error.includes('DatabaseConnectionError') ||
+          result.error.toLowerCase().includes('database')
+        ) {
+          setErrorMessage(
+            locale === 'ar'
+              ? 'تعذر الاتصال بقاعدة البيانات. يرجى التأكد من ضبط متغير DATABASE_URL في لوحة تحكم Vercel'
+              : 'Could not connect to the database. Please verify DATABASE_URL in Vercel settings.'
+          );
+        } else if (result.error === 'Configuration') {
           setErrorMessage(
             locale === 'ar'
               ? 'خطأ في إعدادات المصادقة في السيرفر'

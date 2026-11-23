@@ -69,8 +69,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: user.email,
             role: user.role,
           };
-        } catch (authErr) {
+        } catch (authErr: any) {
           console.error('Error during authorization:', authErr);
+          if (
+            authErr?.name === 'PrismaClientInitializationError' ||
+            authErr?.message?.includes("Can't reach database server")
+          ) {
+            throw new Error('DatabaseConnectionError');
+          }
           return null;
         }
       },

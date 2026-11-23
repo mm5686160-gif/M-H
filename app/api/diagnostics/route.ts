@@ -25,24 +25,31 @@ export async function GET() {
       select: { id: true, email: true, role: true, isActive: true, hashedPassword: true },
     });
 
-    if (owner) {
-      result.ownerFound = true;
-      result.ownerRole = owner.role;
-      result.ownerActive = owner.isActive;
-      result.passwordMatchesNew = await bcrypt.compare('!Password123', owner.hashedPassword);
-      result.passwordMatchesOld = await bcrypt.compare('Password123!', owner.hashedPassword);
-    } else {
-      result.ownerFound = false;
-      const allUsers = await prisma.user.findMany({ select: { email: true } });
-      result.availableEmails = allUsers.map(u => u.email);
-    }
-  } catch (err: any) {
-    result.dbError = {
-      name: err.name,
-      message: err.message,
-      code: err.code,
-    };
-  }
+    const rawDbUrl = process.env.DATABASE_URL || '';
+    const isPooler = rawDbUrl.includes('pooler.supabase.com');
+    const isDirect = rawDbUrl.includes('db.') && rawDbUrl.includes('.supabase.co');
 
-  return NextResponse.json(result);
+    return NextResponse.json({
+      status: 'ok',
+      databaseConnected: true,
+      userCount,
+      ownerFound: Boolean(owner),
+      connectionType: isPooler ? 'Supabase Connection Pooler (Correct)' : isDirect ? 'Supabase Direct Host (May fail in serverless)' : 'Other',
+    });
+  } catch (err: any) {
+    const rawDbUrl = process.env.DATABASE_URL || '';
+    const isDirect = rawDbUrl.includes('db.') && rawDbUrl.includes('.supabase.co');
+
+    return NextResponse.json(
+      {
+        status: 'error',
+        databaseConnected: false,
+        error: err.message,
+        hint: isDirect
+          ? 'You are using the Supabase DIRECT URL which is IPv6 only and unreachable from Vercel functions. Please use the Supabase Pooler URL (aws-0-eu-west-1.pooler.supabase.com) with URL-encoded password (%24 instead of $).'
+          : 'Database connection failed. Please verify DATABASE_URL and DIRECT_URL in Vercel settings.',
+      },
+      { status: 500 }
+    );
+  }
 }
